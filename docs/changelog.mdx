@@ -45,10 +45,11 @@ Versions work together down to these floors, as measured against the current cod
 
 Each entry lists the parts it changed. Filter on the right to see only the ones you use.
 
-<Update label="Unreleased" tags={["Web"]}>
+<Update label="Unreleased" tags={["Web", "CLI"]}>
   **The download page offers Floe Desktop 1.1.4**
 
   - The floe.one download page now offers Floe Desktop 1.1.4, with its installer, zip and checksums.
+- CLI: on macOS and Linux, floe receive now refuses a file that is larger than the save drive can hold before the Accept? prompt, as it already did on Windows. A file over 4 GiB to a FAT32 drive used to be accepted and then stopped once 4 GB had arrived.
 </Update>
 
 <Update label="desktop-v1.1.4" description="2026-11-26" tags={["Desktop"]}>
