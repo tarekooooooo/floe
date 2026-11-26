@@ -758,6 +758,33 @@ describe('the history store', () => {
         expect(screen.getByText('300 files')).toBeTruthy();
     });
 
+    // A send's row keeps the first 200 names too, and the real count. A sent
+    // folder is one item with one name, so this stages 300 files. A row that
+    // is already stored keeps every name it was stored with.
+    it('a 300-file send stores 200 names', async () => {
+        const older = Array.from({ length: 250 }, (_, i) => `old${i + 1}.bin`);
+        localStorage.setItem('floe:history', JSON.stringify([{ kind: 'send', names: older, count: 250, at: 1_700_000_000_000 }]));
+        const user = userEvent.setup();
+        mount();
+        await settled();
+        const paths = Array.from({ length: 300 }, (_, i) => `c:\\Users\\test\\f${i + 1}.bin`);
+        act(() => { wails.emit('files:open', paths); });
+        await user.click(await screen.findByRole('button', { name: 'Send 300 items' }));
+        await waitFor(() => expect(wails.go.StartSend).toHaveBeenCalledTimes(1));
+        act(() => { wails.emit('send:done'); });
+        await waitFor(() => expect(JSON.parse(localStorage.getItem('floe:history') || '[]')).toHaveLength(2));
+        const [row, stored] = JSON.parse(localStorage.getItem('floe:history')!);
+        expect(row.kind).toBe('send');
+        expect(row.names).toHaveLength(200);
+        expect([row.names[0], row.names[199]]).toEqual(['f1.bin', 'f200.bin']);
+        expect(row.count).toBe(300);
+        // The row stored before it is left as it was.
+        expect(stored.names).toEqual(older);
+        // The row is titled by the real count.
+        await user.click(screen.getByRole('button', { name: 'History' }));
+        expect(screen.getByText('300 files')).toBeTruthy();
+    });
+
     // An empty file gets no recv:progress, only its recv:file-done.
     async function codeReceive(user: ReturnType<typeof userEvent.setup>, events: () => void) {
         let finish!: (dir: string) => void;
