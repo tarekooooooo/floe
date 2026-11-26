@@ -690,7 +690,8 @@ function App() {
             // erase the record of a note that really did go out earlier.
             if (outgoingTextRef.current) setSentText(outgoingTextRef.current);
             const names = sentNamesRef.current;
-            setHistory((prev) => [{kind: 'send' as const, names, count: names.length, bytes: sendBytesRef.current || undefined, at: Date.now()}, ...prev].slice(0, HISTORY_CAP));
+// The first REQUEST_NAMES_CAP names, as a receive's row keeps, and the real count.
+            setHistory((prev) => [{kind: 'send' as const, names: names.slice(0, REQUEST_NAMES_CAP), count: names.length, bytes: sendBytesRef.current || undefined, at: Date.now()}, ...prev].slice(0, HISTORY_CAP));
         });
         EventsOn('send:error', (msg: string) => {
             if (sendCancel.current) return;
